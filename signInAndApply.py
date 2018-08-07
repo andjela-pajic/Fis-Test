@@ -12,33 +12,41 @@ email = 'andjela.pajic90@gmail.com'
 try:
     driver = webdriver.Chrome()
     driver.get("https://www.fisglobal.com/")
+    
+    #hover over menu to select carreers
     element_to_hover_over = driver.find_element_by_xpath('//*[@id="navbar-collapse-grid"]/ul[2]/li[4]/a')
-
     hover = ActionChains(driver).move_to_element(element_to_hover_over)
     hover.perform()
 
     driver.find_element_by_xpath('//*[@id="navbar-collapse-grid"]/ul[2]/li[4]/ul/li/div/div[1]/ul[3]/li[6]/a').click()
     #accept cookies
     driver.find_element_by_xpath('//*[@id="btnContinue"]').click()
+    #wait for the iframe to load
     try:
         searchIframe = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.XPATH, '//*[@id="careersframe"]'))
         )
-    except:
-        driver.quit()
+    except Exception as e:
+        print('Iframe not found')
+        print(e)
+    #switch context to the iframe
     driver.switch_to_frame(searchIframe)
 
     #filling the button search Job by ID
     driver.find_element_by_id('com.peopleclick.cp.formdata.SEARCHCRITERIA_CLIENTREQID').send_keys('55631')                     
     driver.find_element_by_xpath('//*[@id="sp-searchButton"]').click()
+    #wait for new page to load
     try:
-        iframe = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, '//*[@id="careersframe"]'))
+        applyButton = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, '//*[@id="mobile_applybutton_124773_en-us"]'))
         )
-    except:
-        print('nije nasao')
-    driver.find_element_by_xpath('//*[@id="mobile_applybutton_124773_en-us"]').click()
+    except Exception as e:
+        print('Button not found')
+        print(e)
+    applyButton.click()
+    #filling the input for email
     driver.find_element_by_xpath('//*[@id="com.peopleclick.cp.formdata.USER_AUTH_PRIMARYEMAILADDRESS"]').send_keys(email)
+    #filling the input for username
     driver.find_element_by_xpath('//*[@id="com.peopleclick.cp.formdata.USER_AUTH_PASSWORD"]').send_keys(username)
     driver.find_element_by_xpath('//*[@id="signinButton"]').click()
     driver.find_element_by_xpath('//*[@id="com.peopleclick.cp.formdata.CAND_CONTACTMETHOD"]').click()
@@ -59,10 +67,30 @@ try:
 
 
     driver.find_element_by_xpath('//*[@id="nextButton"]').click()
-    
+    #wait for the next page
+    try:
+        uploadResumeField = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, '//*[@id="resumeFile"]'))
+        )
+    except Exception as e:
+        print('Upload button not found')
+        print(e)
+    #upload resume
+    uploadResumeField.send_keys(os.getcwd() + r"\Andjela_Pajic_CV.pdf")
 
-    
-    
+    #check radio button for uploading cover letter
+    driver.find_element_by_xpath('//*[@id="uploadCLRadio-label"]').click()
+    #upload cover letter   
+    driver.find_element_by_xpath('//*[@id="coverLetterFile"]').send_keys(os.getcwd() + r"\Andjela_Pajic_cover_letter.pdf")
 
-except:
-    print('puko')
+    driver.find_element_by_xpath('//*[@id="nextButton"]').click()
+    driver.find_element_by_xpath('//*[@id="nextButton"]').click()
+    driver.find_element_by_xpath('//*[@id="nextButton"]').click()
+
+    driver.find_element_by_xpath('//*[@id="id-com.peopleclick.cp.formdata.FLD_CP_CONSENT_STATEMENT-1"]').click()
+    driver.find_element_by_xpath('//*[@id="com.peopleclick.cp.formdata.FLD_CP_CONSENT_USERNAME"]').send_keys(email)
+    driver.find_element_by_xpath('//*[@id="finishButton"]').click()
+
+except Exception as e:
+    print('Something goes wrong')
+    print(e)
